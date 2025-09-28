@@ -1,0 +1,108 @@
+<div class="pick-ride-container">
+  <div class="pick-ride-card">
+    <div class="header">
+      <button class="back-btn" (click)="goBack()">
+        <span class="back-icon">←</span> Back to Dashboard
+      </button>
+      <h1>Available Rides</h1>
+      <p *ngIf="currentEmployee">Find and book rides for today</p>
+    </div>
+
+    <div class="alert alert-success" *ngIf="successMessage">
+      {{ successMessage }}
+    </div>
+
+    <div class="alert alert-error" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <div class="filter-group">
+        <label for="vehicleType">Filter by Vehicle Type:</label>
+        <select 
+          id="vehicleType" 
+          [(ngModel)]="selectedVehicleType"
+          (change)="onVehicleTypeChange()"
+          class="filter-select"
+        >
+          <option *ngFor="let type of vehicleTypes" [value]="type === 'All' ? '' : type">
+            {{ type }}
+          </option>
+        </select>
+      </div>
+      
+      <button class="refresh-btn" (click)="refreshRides()">
+        <span class="refresh-icon">↻</span> Refresh
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading" *ngIf="isLoading">
+      <div class="loading-spinner"></div>
+      <p>Loading available rides...</p>
+    </div>
+
+    <!-- No Rides Available -->
+    <div class="no-rides" *ngIf="!isLoading && filteredRides.length === 0">
+      <div class="no-rides-icon"></div>
+      <h3>No rides available</h3>
+      <p>There are no rides matching your criteria within the next 60 minutes.</p>
+      <button class="btn btn-primary" (click)="refreshRides()">
+        Check Again
+      </button>
+    </div>
+
+    <!-- Rides List -->
+    <div class="rides-list" *ngIf="!isLoading && filteredRides.length > 0">
+      <div class="ride-card" *ngFor="let ride of filteredRides">
+        <div class="ride-header">
+          <div class="vehicle-info">
+            <span class="vehicle-type" [class]="ride.vehicleType.toLowerCase()">
+              {{ ride.vehicleType }}
+            </span>
+            <span class="vehicle-number">{{ ride.vehicleNo }}</span>
+          </div>
+          <div class="time-info">
+            <span class="time">{{ formatTime(ride.time) }}</span>
+          </div>
+        </div>
+
+        <div class="ride-body">
+          <div class="route-info">
+            <div class="route-point">
+              <span class="route-label">From:</span>
+              <span class="route-value">{{ ride.pickupPoint }}</span>
+            </div>
+            <div class="route-arrow">→</div>
+            <div class="route-point">
+              <span class="route-label">To:</span>
+              <span class="route-value">{{ ride.destination }}</span>
+            </div>
+          </div>
+
+          <div class="ride-details">
+            <div class="detail-item">
+              <span class="detail-label">Available Seats:</span>
+              <span class="detail-value seats-count">{{ getAvailableSeats(ride) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Driver:</span>
+              <span class="detail-value">Employee ID: {{ ride.employeeId }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ride-footer">
+          <button 
+            class="btn btn-primary book-btn"
+            (click)="bookRide(ride)"
+            [disabled]="getAvailableSeats(ride) <= 0"
+          >
+            {{ getAvailableSeats(ride) <= 0 ? 'Fully Booked' : 'Book Ride' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

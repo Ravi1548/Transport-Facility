@@ -1,0 +1,162 @@
+<div class="add-ride-container">
+  <div class="header">
+    <h1>Add New Ride</h1>
+    <p class="subtitle">Share your ride with colleagues</p>
+  </div>
+
+  <div *ngIf="hasRideToday" class="alert alert-warning">
+    <i class="icon-warning"></i>
+    <div>
+      <strong>You already have a ride for today!</strong>
+      <p>Each employee can add only one ride per day.</p>
+      <button class="btn btn-secondary" (click)="goToSearchRides()">
+        View Available Rides
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="submitMessage" class="alert" [ngClass]="submitSuccess ? 'alert-success' : 'alert-error'">
+    <i [class]="submitSuccess ? 'icon-success' : 'icon-error'"></i>
+    {{ submitMessage }}
+  </div>
+
+  <form [formGroup]="rideForm" (ngSubmit)="onSubmit()" class="ride-form" *ngIf="!hasRideToday">
+    
+    <div class="form-group">
+      <label for="employeeId">Employee ID *</label>
+      <input
+        type="text"
+        id="employeeId"
+        formControlName="employeeId"
+        [class.invalid]="isFieldInvalid('employeeId')"
+        (blur)="onEmployeeIdChange()"
+        placeholder="Enter your employee ID"
+        [readonly]="!!currentEmployeeId"
+      />
+      <div *ngIf="isFieldInvalid('employeeId')" class="error-message">
+        {{ getFieldError('employeeId') }}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="vehicleType">Vehicle Type *</label>
+      <select
+        id="vehicleType"
+        formControlName="vehicleType"
+        [class.invalid]="isFieldInvalid('vehicleType')"
+      >
+        <option value="">Select vehicle type</option>
+        <option *ngFor="let type of vehicleTypes" [value]="type">{{ type }}</option>
+      </select>
+      <div *ngIf="isFieldInvalid('vehicleType')" class="error-message">
+        {{ getFieldError('vehicleType') }}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="vehicleNo">Vehicle Number *</label>
+      <input
+        type="text"
+        id="vehicleNo"
+        formControlName="vehicleNo"
+        [class.invalid]="isFieldInvalid('vehicleNo')"
+        placeholder="e.g., DL01AB1234"
+        style="text-transform: uppercase"
+      />
+      <div class="help-text">Format: DL01AB1234 (State Code + District + Series + Number)<br>
+        <strong>Note:</strong> Each vehicle can only be used once per day</div>
+      <div *ngIf="isFieldInvalid('vehicleNo')" class="error-message">
+        {{ getFieldError('vehicleNo') }}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="vacantSeats">Vacant Seats *</label>
+      <input
+        type="number"
+        id="vacantSeats"
+        formControlName="vacantSeats"
+        [class.invalid]="isFieldInvalid('vacantSeats')"
+        [min]="rideForm.get('vehicleType')?.value === 'Bike' ? 1 : 1"
+        [max]="rideForm.get('vehicleType')?.value === 'Bike' ? 1 : 7"
+        [readonly]="rideForm.get('vehicleType')?.value === 'Bike'"
+        placeholder="Number of available seats"
+      />
+      <div class="help-text">
+        <span *ngIf="rideForm.get('vehicleType')?.value === 'Bike'">Bikes can only have 1 passenger seat</span>
+        <span *ngIf="rideForm.get('vehicleType')?.value === 'Car'">Cars can have 1-7 passenger seats</span>
+        <span *ngIf="!rideForm.get('vehicleType')?.value">Select vehicle type first</span>
+      </div>
+      <div *ngIf="isFieldInvalid('vacantSeats')" class="error-message">
+        {{ getFieldError('vacantSeats') }}
+      </div>
+    </div>  
+    <div class="form-group">  
+      <label for="time">Departure  Time *</label>
+      <input
+        type="time"
+        id="time"
+        formControlName="time"
+        [class.invalid]="isFieldInvalid('time')"
+      /> 
+      <div class="help-text">Select time for today only</div>
+      <div *ngIf="isFieldInvalid('time')" class="error-message">
+        {{ getFieldError('time') }}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="pickupPoint">Pickup Point *</label>
+      <input
+        type="text"
+        id="pickupPoint"
+        formControlName="pickupPoint"
+        [class.invalid]="isFieldInvalid('pickupPoint')"
+        placeholder="Enter pickup location"
+        list="pickupOptions"
+      />
+      <datalist id="pickupOptions">
+        <option *ngFor="let location of commonLocations" [value]="location">
+      </datalist>
+      <div *ngIf="isFieldInvalid('pickupPoint')" class="error-message">
+        {{ getFieldError('pickupPoint') }}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="destination">Destination *</label>
+      <input
+        type="text"
+        id="destination"
+        formControlName="destination"
+        [class.invalid]="isFieldInvalid('destination')"
+        placeholder="Enter destination"
+        list="destinationOptions"
+      />
+      <datalist id="destinationOptions">
+        <option *ngFor="let location of commonLocations" [value]="location">
+      </datalist>
+      <div *ngIf="isFieldInvalid('destination')" class="error-message">
+        {{ getFieldError('destination') }}
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="goToSearchRides()"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="rideForm.invalid || isSubmitting"
+      >
+        <span *ngIf="isSubmitting" class="spinner"></span>
+        {{ isSubmitting ? 'Adding Ride...' : 'Add Ride' }}
+      </button>
+    </div>
+  </form>
+</div>
